@@ -1,0 +1,33 @@
+class AppStrings {
+  static const appName = 'Cocktail Book';
+  static const navRecipes = 'レシピ';
+  static const navCategories = 'カテゴリ';
+  static const navSettings = '設定';
+  static const searchHint = 'レシピを検索...';
+  static const allCategories = 'すべて';
+  static const favorites = 'お気に入り';
+  static const emptyRecipes = 'レシピがありません';
+  static const ingredients = '材料';
+  static const steps = '作り方';
+  static const memo = 'メモ';
+  static const servings = '人分';
+  static const editRecipe = 'レシピを編集';
+  static const deleteRecipe = '削除';
+  static const deleteConfirm = 'このレシピを削除しますか？';
+  static const addRecipe = 'レシピを追加';
+  static const recipeNameHint = 'レシピ名';
+  static const addIngredient = '材料を追加';
+  static const addStep = '手順を追加';
+  static const save = '保存';
+  static const cancel = 'キャンセル';
+  static const delete = '削除';
+  static const confirm = '確認';
+  static const categoryName = 'カテゴリ名';
+  static const addCategory = 'カテゴリを追加';
+  static const defaultUnit = 'デフォルト単位';
+  static const unitMl = 'ml';
+  static const unitOz = 'oz';
+  static const version = 'バージョン';
+  static const presetRecipes = 'プリセットレシピ';
+  static const resetPresets = 'プリセットをリセット';
+}
