@@ -1,5 +1,9 @@
 import 'package:go_router/go_router.dart';
-import 'package:flutter/material.dart';
+import '../../presentation/features/recipe_list/recipe_list_screen.dart';
+import '../../presentation/features/recipe_detail/recipe_detail_screen.dart';
+import '../../presentation/features/recipe_form/recipe_form_screen.dart';
+import '../../presentation/features/category/category_screen.dart';
+import '../../presentation/features/settings/settings_screen.dart';
 
 enum AppRoute {
   recipeList('/'),
@@ -18,31 +22,31 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(
       path: AppRoute.recipeList.path,
-      builder: (_, __) => const Scaffold(body: Center(child: Text('Recipe List'))),
+      builder: (_, __) => const RecipeListScreen(),
     ),
     GoRoute(
       path: AppRoute.recipeAdd.path,
-      builder: (_, __) => const Scaffold(body: Center(child: Text('Add Recipe'))),
+      builder: (_, __) => const RecipeFormScreen(),
     ),
     GoRoute(
       path: AppRoute.recipeDetail.path,
-      builder: (_, state) => Scaffold(
-        body: Center(child: Text('Recipe ${state.pathParameters["id"]}')),
+      builder: (_, state) => RecipeDetailScreen(
+        recipeId: int.parse(state.pathParameters['id']!),
       ),
     ),
     GoRoute(
       path: AppRoute.recipeEdit.path,
-      builder: (_, state) => Scaffold(
-        body: Center(child: Text('Edit Recipe ${state.pathParameters["id"]}')),
+      builder: (_, state) => RecipeFormScreen(
+        recipeId: int.parse(state.pathParameters['id']!),
       ),
     ),
     GoRoute(
       path: AppRoute.category.path,
-      builder: (_, __) => const Scaffold(body: Center(child: Text('Category'))),
+      builder: (_, __) => const CategoryScreen(),
     ),
     GoRoute(
       path: AppRoute.settings.path,
-      builder: (_, __) => const Scaffold(body: Center(child: Text('Settings'))),
+      builder: (_, __) => const SettingsScreen(),
     ),
   ],
 );
