@@ -44,7 +44,9 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     _nameCtrl.text = recipe.name;
     _memoCtrl.text = recipe.memo;
     _selectedCategoryId = recipe.categoryId;
-    _ingredients.addAll(recipe.ingredients.map((i) => _IngredientField(
+    _ingredients.addAll(
+      recipe.ingredients.map(
+        (i) => _IngredientField(
           nameCtrl: TextEditingController(text: i.name),
           amountCtrl: TextEditingController(
             text: i.amount == i.amount.roundToDouble()
@@ -52,7 +54,9 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                 : i.amount.toString(),
           ),
           unit: i.unit,
-        )));
+        ),
+      ),
+    );
     _steps.addAll(recipe.steps.map((s) => TextEditingController(text: s)));
   }
 
@@ -68,13 +72,9 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title:
-            Text(_isEdit ? AppStrings.editRecipe : AppStrings.addRecipe),
+        title: Text(_isEdit ? AppStrings.editRecipe : AppStrings.addRecipe),
         actions: [
-          TextButton(
-            onPressed: _save,
-            child: const Text(AppStrings.save),
-          ),
+          TextButton(onPressed: _save, child: const Text(AppStrings.save)),
         ],
       ),
       body: ListView(
@@ -96,71 +96,82 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                 border: OutlineInputBorder(),
               ),
               items: cats
-                  .map((c) => DropdownMenuItem(
-                        value: c.id,
-                        child: Text('${c.icon} ${c.name}'),
-                      ))
+                  .map(
+                    (c) => DropdownMenuItem(
+                      value: c.id,
+                      child: Text('${c.icon} ${c.name}'),
+                    ),
+                  )
                   .toList(),
-              onChanged: (v) =>
-                  setState(() => _selectedCategoryId = v),
+              onChanged: (v) => setState(() => _selectedCategoryId = v),
             ),
             loading: () => const LinearProgressIndicator(),
             error: (_, __) => const SizedBox(),
           ),
           const SizedBox(height: 24),
-          Text(AppStrings.ingredients,
-              style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            AppStrings.ingredients,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
-          ..._ingredients.asMap().entries.map((e) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _IngredientRow(
-                  field: e.value,
-                  onRemove: () =>
-                      setState(() => _ingredients.removeAt(e.key)),
-                ),
-              )),
+          ..._ingredients.asMap().entries.map(
+            (e) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _IngredientRow(
+                field: e.value,
+                onRemove: () => setState(() => _ingredients.removeAt(e.key)),
+              ),
+            ),
+          ),
           TextButton.icon(
             icon: const Icon(Icons.add),
             label: const Text(AppStrings.addIngredient),
-            onPressed: () => setState(() => _ingredients.add(
-                  _IngredientField(
-                    nameCtrl: TextEditingController(),
-                    amountCtrl: TextEditingController(),
-                    unit: AppConstants.ingredientUnits.first,
-                  ),
-                )),
+            onPressed: () => setState(
+              () => _ingredients.add(
+                _IngredientField(
+                  nameCtrl: TextEditingController(),
+                  amountCtrl: TextEditingController(),
+                  unit: AppConstants.ingredientUnits.first,
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 16),
-          Text(AppStrings.steps,
-              style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            AppStrings.steps,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
-          ..._steps.asMap().entries.map((e) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 13,
-                      child: Text('${e.key + 1}',
-                          style: const TextStyle(fontSize: 11)),
+          ..._steps.asMap().entries.map(
+            (e) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 13,
+                    child: Text(
+                      '${e.key + 1}',
+                      style: const TextStyle(fontSize: 11),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        controller: e.value,
-                        decoration: InputDecoration(
-                          hintText: '手順 ${e.key + 1}',
-                          border: const OutlineInputBorder(),
-                        ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: e.value,
+                      decoration: InputDecoration(
+                        hintText: '手順 ${e.key + 1}',
+                        border: const OutlineInputBorder(),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.remove_circle_outline),
-                      onPressed: () =>
-                          setState(() => _steps.removeAt(e.key)),
-                    ),
-                  ],
-                ),
-              )),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline),
+                    onPressed: () => setState(() => _steps.removeAt(e.key)),
+                  ),
+                ],
+              ),
+            ),
+          ),
           TextButton.icon(
             icon: const Icon(Icons.add),
             label: const Text(AppStrings.addStep),
@@ -191,11 +202,13 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
       name: name,
       categoryId: _selectedCategoryId ?? 0,
       ingredients: _ingredients
-          .map((i) => IngredientEntity(
-                name: i.nameCtrl.text.trim(),
-                amount: double.tryParse(i.amountCtrl.text) ?? 0,
-                unit: i.unit,
-              ))
+          .map(
+            (i) => IngredientEntity(
+              name: i.nameCtrl.text.trim(),
+              amount: double.tryParse(i.amountCtrl.text) ?? 0,
+              unit: i.unit,
+            ),
+          )
           .where((i) => i.name.isNotEmpty)
           .toList(),
       steps: _steps
@@ -222,10 +235,11 @@ class _IngredientField {
   final TextEditingController amountCtrl;
   String unit;
 
-  _IngredientField(
-      {required this.nameCtrl,
-      required this.amountCtrl,
-      required this.unit});
+  _IngredientField({
+    required this.nameCtrl,
+    required this.amountCtrl,
+    required this.unit,
+  });
 
   void dispose() {
     nameCtrl.dispose();

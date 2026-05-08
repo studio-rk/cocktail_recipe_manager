@@ -11,8 +11,7 @@ class RecipeDetailScreen extends ConsumerStatefulWidget {
   final int recipeId;
 
   @override
-  ConsumerState<RecipeDetailScreen> createState() =>
-      _RecipeDetailScreenState();
+  ConsumerState<RecipeDetailScreen> createState() => _RecipeDetailScreenState();
 }
 
 class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
@@ -41,8 +40,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
               if (!recipe.isPreset)
                 IconButton(
                   icon: const Icon(Icons.edit_outlined),
-                  onPressed: () =>
-                      context.push('/recipe/${recipe.id}/edit'),
+                  onPressed: () => context.push('/recipe/${recipe.id}/edit'),
                 ),
             ],
           ),
@@ -71,32 +69,34 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
               }),
               const SizedBox(height: 20),
               _SectionTitle(AppStrings.steps),
-              ...recipe.steps.asMap().entries.map((e) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          radius: 13,
-                          child: Text(
-                            '${e.key + 1}',
-                            style: const TextStyle(fontSize: 11),
-                          ),
+              ...recipe.steps.asMap().entries.map(
+                (e) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                        radius: 13,
+                        child: Text(
+                          '${e.key + 1}',
+                          style: const TextStyle(fontSize: 11),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(child: Text(e.value)),
-                      ],
-                    ),
-                  )),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text(e.value)),
+                    ],
+                  ),
+                ),
+              ),
               if (recipe.memo.isNotEmpty) ...[
                 const SizedBox(height: 20),
                 _SectionTitle(AppStrings.memo),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(recipe.memo),
@@ -116,8 +116,8 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
           ),
         );
       },
-      loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator())),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, _) => Scaffold(body: Center(child: Text('$e'))),
     );
   }
@@ -131,7 +131,10 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   }
 
   void _confirmDelete(
-      BuildContext context, WidgetRef ref, RecipeEntity recipe) {
+    BuildContext context,
+    WidgetRef ref,
+    RecipeEntity recipe,
+  ) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -144,9 +147,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
           ),
           TextButton(
             onPressed: () async {
-              await ref
-                  .read(recipeRepositoryProvider)
-                  .deleteRecipe(recipe.id);
+              await ref.read(recipeRepositoryProvider).deleteRecipe(recipe.id);
               ref.invalidate(filteredRecipesProvider);
               if (context.mounted) {
                 Navigator.pop(context);
@@ -194,13 +195,12 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(
-          title,
-          style: Theme.of(context)
-              .textTheme
-              .titleMedium
-              ?.copyWith(fontWeight: FontWeight.bold),
-        ),
-      );
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(
+      title,
+      style: Theme.of(
+        context,
+      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+    ),
+  );
 }

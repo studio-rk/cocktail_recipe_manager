@@ -16,11 +16,8 @@ class IngredientModel with _$IngredientModel {
 
   const IngredientModel._();
 
-  IngredientEntity toEntity() => IngredientEntity(
-        name: name,
-        amount: amount,
-        unit: unit,
-      );
+  IngredientEntity toEntity() =>
+      IngredientEntity(name: name, amount: amount, unit: unit);
 
   static IngredientModel fromEntity(IngredientEntity e) =>
       IngredientModel(name: e.name, amount: e.amount, unit: e.unit);

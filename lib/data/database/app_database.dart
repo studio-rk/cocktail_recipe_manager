@@ -18,10 +18,10 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {
-          await m.createAll();
-        },
-      );
+    onCreate: (m) async {
+      await m.createAll();
+    },
+  );
 }
 
 LazyDatabase _openConnection() {

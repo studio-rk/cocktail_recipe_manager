@@ -19,44 +19,46 @@ class RecipeRepositoryImpl implements RecipeRepository {
 
   @override
   Future<List<RecipeEntity>> searchRecipes(String query) async {
-    final rows = await (_db.select(_db.recipesTable)
-          ..where((t) => t.name.like('%$query%')))
-        .get();
+    final rows = await (_db.select(
+      _db.recipesTable,
+    )..where((t) => t.name.like('%$query%'))).get();
     return Future.wait(rows.map(_rowToEntity));
   }
 
   @override
   Future<List<RecipeEntity>> getRecipesByCategory(int categoryId) async {
-    final rows = await (_db.select(_db.recipesTable)
-          ..where((t) => t.categoryId.equals(categoryId)))
-        .get();
+    final rows = await (_db.select(
+      _db.recipesTable,
+    )..where((t) => t.categoryId.equals(categoryId))).get();
     return Future.wait(rows.map(_rowToEntity));
   }
 
   @override
   Future<List<RecipeEntity>> getFavoriteRecipes() async {
-    final rows = await (_db.select(_db.recipesTable)
-          ..where((t) => t.isFavorite.equals(true)))
-        .get();
+    final rows = await (_db.select(
+      _db.recipesTable,
+    )..where((t) => t.isFavorite.equals(true))).get();
     return Future.wait(rows.map(_rowToEntity));
   }
 
   @override
   Future<RecipeEntity?> getRecipeById(int id) async {
-    final row = await (_db.select(_db.recipesTable)
-          ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.recipesTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     if (row == null) return null;
     return _rowToEntity(row);
   }
 
   @override
   Future<int> insertRecipe(RecipeEntity recipe) async {
-    final recipeId = await _db.into(_db.recipesTable).insert(
+    final recipeId = await _db
+        .into(_db.recipesTable)
+        .insert(
           RecipesTableCompanion.insert(
             name: recipe.name,
             categoryId: Value(recipe.categoryId),
-            steps: jsonEncode(recipe.steps),
+            steps: Value(jsonEncode(recipe.steps)),
             memo: Value(recipe.memo),
             isFavorite: Value(recipe.isFavorite),
             isPreset: Value(recipe.isPreset),
@@ -68,18 +70,20 @@ class RecipeRepositoryImpl implements RecipeRepository {
 
   @override
   Future<void> updateRecipe(RecipeEntity recipe) async {
-    await (_db.update(_db.recipesTable)
-          ..where((t) => t.id.equals(recipe.id)))
-        .write(RecipesTableCompanion(
-          name: Value(recipe.name),
-          categoryId: Value(recipe.categoryId),
-          steps: Value(jsonEncode(recipe.steps)),
-          memo: Value(recipe.memo),
-          isFavorite: Value(recipe.isFavorite),
-        ));
-    await (_db.delete(_db.ingredientsTable)
-          ..where((t) => t.recipeId.equals(recipe.id)))
-        .go();
+    await (_db.update(
+      _db.recipesTable,
+    )..where((t) => t.id.equals(recipe.id))).write(
+      RecipesTableCompanion(
+        name: Value(recipe.name),
+        categoryId: Value(recipe.categoryId),
+        steps: Value(jsonEncode(recipe.steps)),
+        memo: Value(recipe.memo),
+        isFavorite: Value(recipe.isFavorite),
+      ),
+    );
+    await (_db.delete(
+      _db.ingredientsTable,
+    )..where((t) => t.recipeId.equals(recipe.id))).go();
     await _insertIngredients(recipe.id, recipe.ingredients);
   }
 
@@ -90,8 +94,9 @@ class RecipeRepositoryImpl implements RecipeRepository {
 
   @override
   Future<void> toggleFavorite(int id, bool isFavorite) async {
-    await (_db.update(_db.recipesTable)..where((t) => t.id.equals(id)))
-        .write(RecipesTableCompanion(isFavorite: Value(isFavorite)));
+    await (_db.update(_db.recipesTable)..where((t) => t.id.equals(id))).write(
+      RecipesTableCompanion(isFavorite: Value(isFavorite)),
+    );
   }
 
   @override
@@ -103,13 +108,14 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<int> insertCategory(CategoryEntity category) =>
-      _db.into(_db.categoriesTable).insert(
-            CategoriesTableCompanion.insert(
-              name: category.name,
-              icon: Value(category.icon),
-            ),
-          );
+  Future<int> insertCategory(CategoryEntity category) => _db
+      .into(_db.categoriesTable)
+      .insert(
+        CategoriesTableCompanion.insert(
+          name: category.name,
+          icon: Value(category.icon),
+        ),
+      );
 
   @override
   Future<void> deleteCategory(int id) async {
@@ -118,9 +124,13 @@ class RecipeRepositoryImpl implements RecipeRepository {
 
   @override
   Future<void> seedPresets(
-      List<RecipeEntity> recipes, List<CategoryEntity> categories) async {
+    List<RecipeEntity> recipes,
+    List<CategoryEntity> categories,
+  ) async {
     for (final cat in categories) {
-      await _db.into(_db.categoriesTable).insert(
+      await _db
+          .into(_db.categoriesTable)
+          .insert(
             CategoriesTableCompanion.insert(
               name: cat.name,
               icon: Value(cat.icon),
@@ -143,15 +153,19 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   Future<void> _insertIngredients(
-      int recipeId, List<IngredientEntity> ingredients) async {
+    int recipeId,
+    List<IngredientEntity> ingredients,
+  ) async {
     for (var i = 0; i < ingredients.length; i++) {
       final ing = ingredients[i];
-      await _db.into(_db.ingredientsTable).insert(
+      await _db
+          .into(_db.ingredientsTable)
+          .insert(
             IngredientsTableCompanion.insert(
               recipeId: recipeId,
               name: ing.name,
               amount: ing.amount,
-              unit: ing.unit,
+              unit: Value(ing.unit),
               sortOrder: Value(i),
             ),
           );
@@ -159,13 +173,15 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   Future<RecipeEntity> _rowToEntity(RecipesTableData row) async {
-    final ingredientRows = await (_db.select(_db.ingredientsTable)
-          ..where((t) => t.recipeId.equals(row.id))
-          ..orderBy([(t) => OrderingTerm(expression: t.sortOrder)]))
-        .get();
+    final ingredientRows =
+        await (_db.select(_db.ingredientsTable)
+              ..where((t) => t.recipeId.equals(row.id))
+              ..orderBy([(t) => OrderingTerm(expression: t.sortOrder)]))
+            .get();
     final ingredients = ingredientRows
-        .map((r) =>
-            IngredientEntity(name: r.name, amount: r.amount, unit: r.unit))
+        .map(
+          (r) => IngredientEntity(name: r.name, amount: r.amount, unit: r.unit),
+        )
         .toList();
     final steps = (jsonDecode(row.steps) as List).cast<String>();
     return RecipeEntity(

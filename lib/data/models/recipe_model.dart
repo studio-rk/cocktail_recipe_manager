@@ -24,14 +24,14 @@ class RecipeModel with _$RecipeModel {
   const RecipeModel._();
 
   RecipeEntity toEntity() => RecipeEntity(
-        id: id,
-        name: name,
-        categoryId: categoryId,
-        ingredients: ingredients.map((i) => i.toEntity()).toList(),
-        steps: steps,
-        memo: memo,
-        isFavorite: isFavorite,
-        isPreset: isPreset,
-        createdAt: createdAt,
-      );
+    id: id,
+    name: name,
+    categoryId: categoryId,
+    ingredients: ingredients.map((i) => i.toEntity()).toList(),
+    steps: steps,
+    memo: memo,
+    isFavorite: isFavorite,
+    isPreset: isPreset,
+    createdAt: createdAt,
+  );
 }

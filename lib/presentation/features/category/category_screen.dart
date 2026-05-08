@@ -22,8 +22,7 @@ class CategoryScreen extends ConsumerWidget {
                 itemBuilder: (_, i) {
                   final c = cats[i];
                   return ListTile(
-                    leading: Text(c.icon,
-                        style: const TextStyle(fontSize: 24)),
+                    leading: Text(c.icon, style: const TextStyle(fontSize: 24)),
                     title: Text(c.name),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete_outline),
@@ -32,8 +31,7 @@ class CategoryScreen extends ConsumerWidget {
                   );
                 },
               ),
-        loading: () =>
-            const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),
       ),
       floatingActionButton: FloatingActionButton(
@@ -60,13 +58,13 @@ class CategoryScreen extends ConsumerWidget {
           children: [
             TextField(
               controller: iconCtrl,
-              decoration:
-                  const InputDecoration(labelText: '絵文字'),
+              decoration: const InputDecoration(labelText: '絵文字'),
             ),
             TextField(
               controller: nameCtrl,
               decoration: const InputDecoration(
-                  labelText: AppStrings.categoryName),
+                labelText: AppStrings.categoryName,
+              ),
             ),
           ],
         ),
@@ -78,7 +76,9 @@ class CategoryScreen extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               if (nameCtrl.text.trim().isEmpty) return;
-              await ref.read(recipeRepositoryProvider).insertCategory(
+              await ref
+                  .read(recipeRepositoryProvider)
+                  .insertCategory(
                     CategoryEntity(
                       id: 0,
                       name: nameCtrl.text.trim(),

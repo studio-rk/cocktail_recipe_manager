@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/strings/app_strings.dart';
 
-final _defaultUnitProvider =
-    StateNotifierProvider<_UnitNotifier, String>((ref) => _UnitNotifier());
+final _defaultUnitProvider = StateNotifierProvider<_UnitNotifier, String>(
+  (ref) => _UnitNotifier(),
+);
 
 class _UnitNotifier extends StateNotifier<String> {
   _UnitNotifier() : super(AppStrings.unitMl) {
@@ -37,12 +38,11 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text(AppStrings.defaultUnit),
             trailing: DropdownButton<String>(
               value: unit,
-              items: [AppStrings.unitMl, AppStrings.unitOz]
-                  .map((u) =>
-                      DropdownMenuItem(value: u, child: Text(u)))
-                  .toList(),
-              onChanged: (v) =>
-                  ref.read(_defaultUnitProvider.notifier).set(v!),
+              items: [
+                AppStrings.unitMl,
+                AppStrings.unitOz,
+              ].map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+              onChanged: (v) => ref.read(_defaultUnitProvider.notifier).set(v!),
             ),
           ),
         ],

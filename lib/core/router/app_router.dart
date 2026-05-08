@@ -30,15 +30,13 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoute.recipeDetail.path,
-      builder: (_, state) => RecipeDetailScreen(
-        recipeId: int.parse(state.pathParameters['id']!),
-      ),
+      builder: (_, state) =>
+          RecipeDetailScreen(recipeId: int.parse(state.pathParameters['id']!)),
     ),
     GoRoute(
       path: AppRoute.recipeEdit.path,
-      builder: (_, state) => RecipeFormScreen(
-        recipeId: int.parse(state.pathParameters['id']!),
-      ),
+      builder: (_, state) =>
+          RecipeFormScreen(recipeId: int.parse(state.pathParameters['id']!)),
     ),
     GoRoute(
       path: AppRoute.category.path,

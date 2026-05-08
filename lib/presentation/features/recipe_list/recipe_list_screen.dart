@@ -52,13 +52,15 @@ class RecipeListScreen extends ConsumerWidget {
                     onTap: () =>
                         ref.read(categoryFilterProvider.notifier).state = null,
                   ),
-                  ...categories.map((c) => _CategoryChip(
-                        label: '${c.icon} ${c.name}',
-                        selected: selectedCategory == c.id,
-                        onTap: () =>
-                            ref.read(categoryFilterProvider.notifier).state =
-                                c.id,
-                      )),
+                  ...categories.map(
+                    (c) => _CategoryChip(
+                      label: '${c.icon} ${c.name}',
+                      selected: selectedCategory == c.id,
+                      onTap: () =>
+                          ref.read(categoryFilterProvider.notifier).state =
+                              c.id,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -85,15 +87,12 @@ class RecipeListScreen extends ConsumerWidget {
                                   : Icons.favorite_border,
                               color: r.isFavorite ? Colors.red : null,
                             ),
-                            onTap: () => context.push(
-                              '/recipe/${r.id}',
-                            ),
+                            onTap: () => context.push('/recipe/${r.id}'),
                           ),
                         );
                       },
                     ),
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text('$e')),
             ),
           ),

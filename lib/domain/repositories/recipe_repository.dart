@@ -16,6 +16,9 @@ abstract class RecipeRepository {
   Future<int> insertCategory(CategoryEntity category);
   Future<void> deleteCategory(int id);
 
-  Future<void> seedPresets(List<RecipeEntity> recipes, List<CategoryEntity> categories);
+  Future<void> seedPresets(
+    List<RecipeEntity> recipes,
+    List<CategoryEntity> categories,
+  );
   Future<bool> hasSeededPresets();
 }

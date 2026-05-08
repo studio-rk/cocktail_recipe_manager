@@ -3,7 +3,6 @@ import '../../data/database/app_database.dart';
 import '../../data/repositories/repositories.dart';
 import '../../domain/repositories/recipe_repository.dart';
 import '../../domain/entities/recipe_entity.dart';
-import '../../domain/entities/category_entity.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
@@ -20,8 +19,10 @@ final recipesProvider = FutureProvider<List<RecipeEntity>>((ref) {
   return ref.watch(recipeRepositoryProvider).getRecipes();
 });
 
-final recipeDetailProvider =
-    FutureProvider.family<RecipeEntity?, int>((ref, id) {
+final recipeDetailProvider = FutureProvider.family<RecipeEntity?, int>((
+  ref,
+  id,
+) {
   return ref.watch(recipeRepositoryProvider).getRecipeById(id);
 });
 

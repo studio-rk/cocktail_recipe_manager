@@ -3,7 +3,8 @@ import 'recipes_table.dart';
 
 class IngredientsTable extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get recipeId => integer().references(RecipesTable, #id, onDelete: KeyAction.cascade)();
+  IntColumn get recipeId =>
+      integer().references(RecipesTable, #id, onDelete: KeyAction.cascade)();
   TextColumn get name => text().withLength(min: 1, max: 50)();
   RealColumn get amount => real()();
   TextColumn get unit => text().withDefault(const Constant('ml'))();
