@@ -1,0 +1,49 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - master
+
+jobs:
+  static-analysis:
+    name: Static Analysis & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read .fvmrc Flutter version
+        id: fvm
+        run: |
+          if [ -f ".fvmrc" ]; then
+            VERSION=$(grep -o '"flutter": "[^"]*"' .fvmrc | sed 's/"flutter": "\(.*\)"/\1/')
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "version=stable" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.fvm.outputs.version }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --set-exit-if-changed .
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: |
+          if [ -d "test" ] && [ "$(ls -A test 2>/dev/null)" ]; then
+            flutter test
+          else
+            echo "No tests directory found, skipping."
+          fi
