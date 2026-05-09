@@ -4,7 +4,7 @@ on:
   pull_request:
     branches:
       - develop
-      - master
+      - main
 
 jobs:
   static-analysis:
@@ -21,13 +21,21 @@ jobs:
             VERSION=$(grep -o '"flutter": "[^"]*"' .fvmrc | sed 's/"flutter": "\(.*\)"/\1/')
             echo "version=$VERSION" >> $GITHUB_OUTPUT
           else
-            echo "version=stable" >> $GITHUB_OUTPUT
+            echo "version=" >> $GITHUB_OUTPUT
           fi
 
-      - name: Setup Flutter
+      - name: Setup Flutter (with .fvmrc version)
+        if: steps.fvm.outputs.version != ''
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ steps.fvm.outputs.version }}
+          channel: stable
+          cache: true
+
+      - name: Setup Flutter (latest stable)
+        if: steps.fvm.outputs.version == ''
+        uses: subosito/flutter-action@v2
+        with:
           channel: stable
           cache: true
 
