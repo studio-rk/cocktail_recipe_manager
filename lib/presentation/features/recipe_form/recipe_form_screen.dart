@@ -22,6 +22,9 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
   final List<_IngredientField> _ingredients = [];
   final List<TextEditingController> _steps = [];
   bool _loaded = false;
+  bool _originalIsFavorite = false;
+  bool _originalIsPreset = false;
+  DateTime? _originalCreatedAt;
 
   bool get _isEdit => widget.recipeId != null;
 
@@ -44,6 +47,9 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     _nameCtrl.text = recipe.name;
     _memoCtrl.text = recipe.memo;
     _selectedCategoryId = recipe.categoryId;
+    _originalIsFavorite = recipe.isFavorite;
+    _originalIsPreset = recipe.isPreset;
+    _originalCreatedAt = recipe.createdAt;
     _ingredients.addAll(
       recipe.ingredients.map(
         (i) => _IngredientField(
@@ -90,7 +96,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
           const SizedBox(height: 16),
           categoriesAsync.when(
             data: (cats) => DropdownButtonFormField<int>(
-              value: _selectedCategoryId,
+              initialValue: _selectedCategoryId,
               decoration: const InputDecoration(
                 labelText: AppStrings.navCategories,
                 border: OutlineInputBorder(),
@@ -159,7 +165,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                     child: TextField(
                       controller: e.value,
                       decoration: InputDecoration(
-                        hintText: '手順 ${e.key + 1}',
+                        hintText: '${AppStrings.stepHintPrefix} ${e.key + 1}',
                         border: const OutlineInputBorder(),
                       ),
                     ),
@@ -216,9 +222,11 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
           .where((s) => s.isNotEmpty)
           .toList(),
       memo: _memoCtrl.text.trim(),
-      isFavorite: false,
-      isPreset: false,
-      createdAt: DateTime.now(),
+      isFavorite: _isEdit ? _originalIsFavorite : false,
+      isPreset: _isEdit ? _originalIsPreset : false,
+      createdAt: _isEdit
+          ? (_originalCreatedAt ?? DateTime.now())
+          : DateTime.now(),
     );
     if (_isEdit) {
       await repo.updateRecipe(recipe);
@@ -266,7 +274,7 @@ class _IngredientRowState extends State<_IngredientRow> {
           child: TextField(
             controller: widget.field.nameCtrl,
             decoration: const InputDecoration(
-              hintText: '材料名',
+              hintText: AppStrings.ingredientName,
               border: OutlineInputBorder(),
             ),
           ),
@@ -277,7 +285,7 @@ class _IngredientRowState extends State<_IngredientRow> {
             controller: widget.field.amountCtrl,
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
-              hintText: '量',
+              hintText: AppStrings.ingredientAmount,
               border: OutlineInputBorder(),
             ),
           ),

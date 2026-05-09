@@ -5,18 +5,12 @@ import '../../domain/repositories/recipe_repository.dart';
 import '../../domain/entities/recipe_entity.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
-  final db = AppDatabase();
-  ref.onDispose(db.close);
-  return db;
+  throw UnimplementedError('appDatabaseProvider must be overridden in main()');
 });
 
 final recipeRepositoryProvider = Provider<RecipeRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   return RecipeRepositoryImpl(db);
-});
-
-final recipesProvider = FutureProvider<List<RecipeEntity>>((ref) {
-  return ref.watch(recipeRepositoryProvider).getRecipes();
 });
 
 final recipeDetailProvider = FutureProvider.family<RecipeEntity?, int>((
@@ -35,7 +29,10 @@ final filteredRecipesProvider = FutureProvider<List<RecipeEntity>>((ref) async {
   final query = ref.watch(searchQueryProvider);
   final categoryId = ref.watch(categoryFilterProvider);
 
-  if (query.isNotEmpty) return repo.searchRecipes(query);
-  if (categoryId != null) return repo.getRecipesByCategory(categoryId);
-  return repo.getRecipes();
+  final base = (categoryId != null)
+      ? await repo.getRecipesByCategory(categoryId)
+      : await repo.getRecipes();
+  if (query.isEmpty) return base;
+  final q = query.toLowerCase();
+  return base.where((r) => r.name.toLowerCase().contains(q)).toList();
 });

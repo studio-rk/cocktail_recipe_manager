@@ -80,14 +80,16 @@ class RecipeListScreen extends ConsumerWidget {
                         return Card(
                           child: ListTile(
                             title: Text(r.name),
-                            subtitle: Text('${r.ingredients.length}種類の材料'),
+                            subtitle: Text(
+                              '${r.ingredients.length}${AppStrings.ingredientsCountSuffix}',
+                            ),
                             trailing: Icon(
                               r.isFavorite
                                   ? Icons.favorite
                                   : Icons.favorite_border,
                               color: r.isFavorite ? Colors.red : null,
                             ),
-                            onTap: () => context.push('/recipe/${r.id}'),
+                            onTap: () => context.push(AppRoute.detail(r.id)),
                           ),
                         );
                       },

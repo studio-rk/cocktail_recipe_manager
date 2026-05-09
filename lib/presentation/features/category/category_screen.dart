@@ -16,7 +16,7 @@ class CategoryScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text(AppStrings.navCategories)),
       body: categoriesAsync.when(
         data: (cats) => cats.isEmpty
-            ? const Center(child: Text('カテゴリがありません'))
+            ? const Center(child: Text(AppStrings.emptyCategories))
             : ListView.builder(
                 itemCount: cats.length,
                 itemBuilder: (_, i) {
@@ -58,7 +58,9 @@ class CategoryScreen extends ConsumerWidget {
           children: [
             TextField(
               controller: iconCtrl,
-              decoration: const InputDecoration(labelText: '絵文字'),
+              decoration: const InputDecoration(
+                labelText: AppStrings.categoryIcon,
+              ),
             ),
             TextField(
               controller: nameCtrl,

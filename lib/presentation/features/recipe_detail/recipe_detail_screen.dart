@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/strings/app_strings.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/recipe_entity.dart';
@@ -24,7 +25,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     return recipeAsync.when(
       data: (recipe) {
         if (recipe == null) {
-          return const Scaffold(body: Center(child: Text('Not found')));
+          return const Scaffold(body: Center(child: Text(AppStrings.notFound)));
         }
         return Scaffold(
           appBar: AppBar(
@@ -40,7 +41,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
               if (!recipe.isPreset)
                 IconButton(
                   icon: const Icon(Icons.edit_outlined),
-                  onPressed: () => context.push('/recipe/${recipe.id}/edit'),
+                  onPressed: () => context.push(AppRoute.edit(recipe.id)),
                 ),
             ],
           ),

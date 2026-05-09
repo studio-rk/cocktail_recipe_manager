@@ -51,40 +51,44 @@ class RecipeRepositoryImpl implements RecipeRepository {
   }
 
   @override
-  Future<int> insertRecipe(RecipeEntity recipe) async {
-    final recipeId = await _db
-        .into(_db.recipesTable)
-        .insert(
-          RecipesTableCompanion.insert(
-            name: recipe.name,
-            categoryId: Value(recipe.categoryId),
-            steps: Value(jsonEncode(recipe.steps)),
-            memo: Value(recipe.memo),
-            isFavorite: Value(recipe.isFavorite),
-            isPreset: Value(recipe.isPreset),
-          ),
-        );
-    await _insertIngredients(recipeId, recipe.ingredients);
-    return recipeId;
+  Future<int> insertRecipe(RecipeEntity recipe) {
+    return _db.transaction(() async {
+      final recipeId = await _db
+          .into(_db.recipesTable)
+          .insert(
+            RecipesTableCompanion.insert(
+              name: recipe.name,
+              categoryId: Value(recipe.categoryId),
+              steps: Value(jsonEncode(recipe.steps)),
+              memo: Value(recipe.memo),
+              isFavorite: Value(recipe.isFavorite),
+              isPreset: Value(recipe.isPreset),
+            ),
+          );
+      await _insertIngredients(recipeId, recipe.ingredients);
+      return recipeId;
+    });
   }
 
   @override
-  Future<void> updateRecipe(RecipeEntity recipe) async {
-    await (_db.update(
-      _db.recipesTable,
-    )..where((t) => t.id.equals(recipe.id))).write(
-      RecipesTableCompanion(
-        name: Value(recipe.name),
-        categoryId: Value(recipe.categoryId),
-        steps: Value(jsonEncode(recipe.steps)),
-        memo: Value(recipe.memo),
-        isFavorite: Value(recipe.isFavorite),
-      ),
-    );
-    await (_db.delete(
-      _db.ingredientsTable,
-    )..where((t) => t.recipeId.equals(recipe.id))).go();
-    await _insertIngredients(recipe.id, recipe.ingredients);
+  Future<void> updateRecipe(RecipeEntity recipe) {
+    return _db.transaction(() async {
+      await (_db.update(
+        _db.recipesTable,
+      )..where((t) => t.id.equals(recipe.id))).write(
+        RecipesTableCompanion(
+          name: Value(recipe.name),
+          categoryId: Value(recipe.categoryId),
+          steps: Value(jsonEncode(recipe.steps)),
+          memo: Value(recipe.memo),
+          isFavorite: Value(recipe.isFavorite),
+        ),
+      );
+      await (_db.delete(
+        _db.ingredientsTable,
+      )..where((t) => t.recipeId.equals(recipe.id))).go();
+      await _insertIngredients(recipe.id, recipe.ingredients);
+    });
   }
 
   @override
@@ -126,20 +130,22 @@ class RecipeRepositoryImpl implements RecipeRepository {
   Future<void> seedPresets(
     List<RecipeEntity> recipes,
     List<CategoryEntity> categories,
-  ) async {
-    for (final cat in categories) {
-      await _db
-          .into(_db.categoriesTable)
-          .insert(
-            CategoriesTableCompanion.insert(
-              name: cat.name,
-              icon: Value(cat.icon),
-            ),
-          );
-    }
-    for (final recipe in recipes) {
-      await insertRecipe(recipe);
-    }
+  ) {
+    return _db.transaction(() async {
+      for (final cat in categories) {
+        await _db
+            .into(_db.categoriesTable)
+            .insert(
+              CategoriesTableCompanion.insert(
+                name: cat.name,
+                icon: Value(cat.icon),
+              ),
+            );
+      }
+      for (final recipe in recipes) {
+        await insertRecipe(recipe);
+      }
+    });
   }
 
   @override

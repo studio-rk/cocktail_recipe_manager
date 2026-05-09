@@ -7,8 +7,13 @@ class AppStrings {
   static const allCategories = 'すべて';
   static const favorites = 'お気に入り';
   static const emptyRecipes = 'レシピがありません';
+  static const emptyCategories = 'カテゴリがありません';
+  static const notFound = '見つかりませんでした';
   static const ingredients = '材料';
+  static const ingredientName = '材料名';
+  static const ingredientAmount = '量';
   static const steps = '作り方';
+  static const stepHintPrefix = '手順';
   static const memo = 'メモ';
   static const servings = '人分';
   static const editRecipe = 'レシピを編集';
@@ -23,6 +28,7 @@ class AppStrings {
   static const delete = '削除';
   static const confirm = '確認';
   static const categoryName = 'カテゴリ名';
+  static const categoryIcon = '絵文字';
   static const addCategory = 'カテゴリを追加';
   static const defaultUnit = 'デフォルト単位';
   static const unitMl = 'ml';
@@ -30,4 +36,5 @@ class AppStrings {
   static const version = 'バージョン';
   static const presetRecipes = 'プリセットレシピ';
   static const resetPresets = 'プリセットをリセット';
+  static const ingredientsCountSuffix = '種類の材料';
 }

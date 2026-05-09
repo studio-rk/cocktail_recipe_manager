@@ -11,3 +11,7 @@ class AppConstants {
     'piece',
   ];
 }
+
+class PrefsKey {
+  static const defaultUnit = 'default_unit';
+}

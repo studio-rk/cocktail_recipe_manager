@@ -5,6 +5,10 @@ import '../../presentation/features/recipe_form/recipe_form_screen.dart';
 import '../../presentation/features/category/category_screen.dart';
 import '../../presentation/features/settings/settings_screen.dart';
 
+class RouteParam {
+  static const id = 'id';
+}
+
 enum AppRoute {
   recipeList('/'),
   recipeDetail('/recipe/:id'),
@@ -15,6 +19,17 @@ enum AppRoute {
 
   const AppRoute(this.path);
   final String path;
+
+  String build({Map<String, String> params = const {}}) {
+    var result = path;
+    params.forEach((k, v) => result = result.replaceAll(':$k', v));
+    return result;
+  }
+
+  static String detail(int id) =>
+      recipeDetail.build(params: {RouteParam.id: '$id'});
+  static String edit(int id) =>
+      recipeEdit.build(params: {RouteParam.id: '$id'});
 }
 
 final appRouter = GoRouter(
@@ -30,13 +45,15 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoute.recipeDetail.path,
-      builder: (_, state) =>
-          RecipeDetailScreen(recipeId: int.parse(state.pathParameters['id']!)),
+      builder: (_, state) => RecipeDetailScreen(
+        recipeId: int.parse(state.pathParameters[RouteParam.id]!),
+      ),
     ),
     GoRoute(
       path: AppRoute.recipeEdit.path,
-      builder: (_, state) =>
-          RecipeFormScreen(recipeId: int.parse(state.pathParameters['id']!)),
+      builder: (_, state) => RecipeFormScreen(
+        recipeId: int.parse(state.pathParameters[RouteParam.id]!),
+      ),
     ),
     GoRoute(
       path: AppRoute.category.path,
