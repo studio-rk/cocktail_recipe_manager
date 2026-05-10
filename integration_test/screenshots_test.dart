@@ -63,8 +63,8 @@ void main() {
     // 一覧に戻る
     await _back(tester);
 
-    // 3. レシピ追加フォーム
-    await tester.tap(find.byIcon(Icons.add).first);
+    // 3. レシピ追加フォーム（FAB を型で特定。Icons.add は将来複数箇所に増えうる）
+    await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
     await _shot(binding, tester, '03_recipe_form');
 

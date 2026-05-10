@@ -56,6 +56,36 @@ else
   die "screenshots/*.png が生成されませんでした"
 fi
 
+# Play Store Phone screenshot 要件チェック
+# 仕様: 最小辺 1080px 以上 / 最大辺 3840px 以下 / 比率 1:2 〜 2:1
+info "Play Store Phone 要件チェック（最小辺 1080px / 比率 1:2〜2:1）"
+WARN_COUNT=0
+for png in screenshots/*.png; do
+  if command -v sips >/dev/null; then
+    W=$(sips -g pixelWidth "$png" 2>/dev/null | awk '/pixelWidth/ {print $2}')
+    H=$(sips -g pixelHeight "$png" 2>/dev/null | awk '/pixelHeight/ {print $2}')
+  elif command -v identify >/dev/null; then
+    read W H < <(identify -format "%w %h" "$png")
+  else
+    W=""; H=""
+  fi
+  if [[ -z "$W" || -z "$H" ]]; then
+    continue
+  fi
+  MIN=$(( W < H ? W : H ))
+  MAX=$(( W > H ? W : H ))
+  STATUS="✓"
+  if (( MIN < 1080 )); then STATUS="⚠ 最小辺 < 1080px"; WARN_COUNT=$((WARN_COUNT+1)); fi
+  if (( MAX > 3840 )); then STATUS="⚠ 最大辺 > 3840px"; WARN_COUNT=$((WARN_COUNT+1)); fi
+  # 比率: max/min が 2.0 を超えると Play Store NG
+  RATIO_X10=$(( MAX * 10 / MIN ))
+  if (( RATIO_X10 > 20 )); then STATUS="⚠ 比率 > 2:1"; WARN_COUNT=$((WARN_COUNT+1)); fi
+  printf "  %s  %s  %sx%s\n" "$STATUS" "$png" "$W" "$H"
+done
+if (( WARN_COUNT > 0 )); then
+  echo "$(color 33 ⚠) $WARN_COUNT 枚が Play Store の要件外。emulator サイズを見直してください。"
+fi
+
 cat <<DONE
 
 $(color 32 "===== 完了 =====")
@@ -64,7 +94,7 @@ $(color 32 "===== 完了 =====")
 
 Play Console アップロード手順:
   1. Play Console → アプリ → ストアの掲載情報 → グラフィック
-  2. 「電話」セクションに 01〜05 をドラッグ&ドロップ
+  2. 「電話」セクションに 01〜04 をドラッグ&ドロップ
   3. 必須は 2 枚以上、推奨は 4〜8 枚
 
 UI を変更したら、このスクリプトを再実行するだけで全部撮り直せます。
