@@ -1,5 +1,5 @@
 class AppStrings {
-  static const appName = 'Cocktail Book';
+  static const appName = 'カクテル手帖';
   static const navRecipes = 'レシピ';
   static const navCategories = 'カテゴリ';
   static const navSettings = '設定';
