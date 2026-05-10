@@ -21,10 +21,6 @@ Future<void> _shot(
   WidgetTester tester,
   String name,
 ) async {
-  if (Platform.isAndroid) {
-    // Android では Flutter surface を画像化しないと真っ黒になる
-    await binding.convertFlutterSurfaceToImage();
-  }
   await tester.pumpAndSettle(const Duration(milliseconds: 250));
   await binding.takeScreenshot(name);
 }
@@ -48,6 +44,13 @@ void main() {
     app.main();
     // 起動 + DB 初期化 + プリセット seeding を待つ
     await tester.pumpAndSettle(const Duration(seconds: 3));
+
+    if (Platform.isAndroid) {
+      // Android では Flutter surface を画像化しないと真っ黒になる。
+      // テスト全体で 1 度だけ呼ぶ（毎 shot で呼ぶと engine が固まる）。
+      await binding.convertFlutterSurfaceToImage();
+      await tester.pumpAndSettle();
+    }
 
     // 1. レシピ一覧
     await _shot(binding, tester, '01_recipe_list');
@@ -73,12 +76,5 @@ void main() {
     await tester.pumpAndSettle();
     await _shot(binding, tester, '04_category');
 
-    // 一覧に戻る
-    await _back(tester);
-
-    // 5. 設定画面
-    await tester.tap(find.byIcon(Icons.settings_outlined).first);
-    await tester.pumpAndSettle();
-    await _shot(binding, tester, '05_settings');
   });
 }
