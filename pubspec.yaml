@@ -34,6 +34,7 @@ dev_dependencies:
   riverpod_generator: ^2.6.3
   custom_lint: ^0.7.0
   riverpod_lint: ^2.6.3
+  flutter_launcher_icons: ^0.14.1
 
 dependency_overrides:
   analyzer_plugin: ^0.13.0
@@ -42,3 +43,11 @@ flutter:
   uses-material-design: true
   assets:
     - assets/presets/preset_recipes.json
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "docs/play-store/ja-JP/images/icon/icon-512-padded.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#0F2B40"
+  adaptive_icon_foreground: "docs/play-store/ja-JP/images/icon/icon-512.png"
