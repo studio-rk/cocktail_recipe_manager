@@ -72,7 +72,7 @@ jobs:
           appId: ${{ secrets.FIREBASE_DEV_ANDROID_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_DEV_SERVICE_ACCOUNT_JSON }}
           # 通知対象は変数で指定（未設定なら通知なしで Firebase コンソールに残るのみ）
-          # groups: ${{ vars.FIREBASE_TESTER_GROUPS }}
+          groups: ${{ vars.FIREBASE_TESTER_GROUPS }}
           # testers: ${{ vars.FIREBASE_TESTER_EMAILS }}
           releaseNotes: |
             Branch: ${{ github.ref_name }}
