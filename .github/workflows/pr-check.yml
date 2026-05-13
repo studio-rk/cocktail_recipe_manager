@@ -14,7 +14,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Detect Flutter project
+        id: app
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "is_flutter=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_flutter=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping Flutter PR check: pubspec.yaml not found. This repository is treated as a template/non-app repo."
+          fi
+
       - name: Read .fvmrc Flutter version
+        if: steps.app.outputs.is_flutter == 'true'
         id: fvm
         run: |
           if [ -f ".fvmrc" ]; then
@@ -25,7 +36,7 @@ jobs:
           fi
 
       - name: Setup Flutter (with .fvmrc version)
-        if: steps.fvm.outputs.version != ''
+        if: steps.app.outputs.is_flutter == 'true' && steps.fvm.outputs.version != ''
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ steps.fvm.outputs.version }}
@@ -33,22 +44,26 @@ jobs:
           cache: true
 
       - name: Setup Flutter (latest stable)
-        if: steps.fvm.outputs.version == ''
+        if: steps.app.outputs.is_flutter == 'true' && steps.fvm.outputs.version == ''
         uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
 
       - name: Install dependencies
+        if: steps.app.outputs.is_flutter == 'true'
         run: flutter pub get
 
       - name: Verify formatting
+        if: steps.app.outputs.is_flutter == 'true'
         run: dart format --set-exit-if-changed .
 
       - name: Analyze
+        if: steps.app.outputs.is_flutter == 'true'
         run: flutter analyze
 
       - name: Test
+        if: steps.app.outputs.is_flutter == 'true'
         run: |
           if [ -d "test" ] && [ "$(ls -A test 2>/dev/null)" ]; then
             flutter test

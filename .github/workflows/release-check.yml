@@ -1,0 +1,249 @@
+name: Release Check
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  release-check:
+    name: Android Release Check
+    runs-on: ubuntu-latest
+    env:
+      PLAY_METADATA_PATH: ${{ vars.PLAY_METADATA_PATH }}
+      PLAY_PACKAGE_NAME: ${{ vars.PLAY_PACKAGE_NAME }}
+      PLAY_INTERNAL_TRACK: ${{ vars.PLAY_INTERNAL_TRACK }}
+      ENABLE_PLAY_INTERNAL_ANDROID: ${{ vars.ENABLE_PLAY_INTERNAL_ANDROID }}
+      FIREBASE_PROD_PROJECT_ID: ${{ vars.FIREBASE_PROD_PROJECT_ID }}
+      SHOULD_REQUIRE_RELEASE_ASSETS: ${{ github.event_name == 'workflow_dispatch' }}
+      SHOULD_CHECK_PLAY_CREDENTIALS: ${{ github.event_name == 'workflow_dispatch' || vars.ENABLE_PLAY_INTERNAL_ANDROID == 'true' }}
+      HAS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON != '' }}
+      HAS_ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      HAS_ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD != '' }}
+      HAS_ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS != '' }}
+      HAS_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect Flutter Android app
+        id: app
+        run: |
+          if [ -f "pubspec.yaml" ] && [ -d "android" ]; then
+            echo "is_flutter_android=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_flutter_android=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping release-check: pubspec.yaml or android/ not found. This repository is treated as a template/non-app repo."
+          fi
+
+      - name: Read .fvmrc Flutter version
+        if: steps.app.outputs.is_flutter_android == 'true'
+        id: fvm
+        run: |
+          if [ -f ".fvmrc" ]; then
+            VERSION=$(grep -o '"flutter": "[^"]*"' .fvmrc | sed 's/"flutter": "\(.*\)"/\1/')
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Flutter (with .fvmrc version)
+        if: steps.app.outputs.is_flutter_android == 'true' && steps.fvm.outputs.version != ''
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.fvm.outputs.version }}
+          channel: stable
+          cache: true
+
+      - name: Setup Flutter (latest stable)
+        if: steps.app.outputs.is_flutter_android == 'true' && steps.fvm.outputs.version == ''
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Setup Java
+        if: steps.app.outputs.is_flutter_android == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Inspect release metadata
+        if: steps.app.outputs.is_flutter_android == 'true'
+        run: |
+          python3 - <<'PY'
+          import os
+          import pathlib
+          import re
+          import sys
+
+          errors = []
+          warnings = []
+          metadata_root = pathlib.Path(os.environ.get("PLAY_METADATA_PATH") or "docs/play-store")
+          locale_root = metadata_root / "ja-JP"
+          play_package_name = os.environ.get("PLAY_PACKAGE_NAME", "").strip()
+          play_metadata_path = os.environ.get("PLAY_METADATA_PATH", "").strip()
+          play_internal_track = os.environ.get("PLAY_INTERNAL_TRACK", "").strip()
+          enable_play_internal = os.environ.get("ENABLE_PLAY_INTERNAL_ANDROID", "").strip()
+          firebase_prod_project_id = os.environ.get("FIREBASE_PROD_PROJECT_ID", "").strip()
+          should_require_release_assets = os.environ.get("SHOULD_REQUIRE_RELEASE_ASSETS") == "true"
+          should_check_play_credentials = os.environ.get("SHOULD_CHECK_PLAY_CREDENTIALS") == "true"
+
+          def require_release_asset(message):
+            if should_require_release_assets:
+              errors.append(message)
+            else:
+              warnings.append(message)
+
+          pubspec = pathlib.Path("pubspec.yaml").read_text(encoding="utf-8")
+          match = re.search(r"^version:\s*([^\s#]+)", pubspec, re.MULTILINE)
+          if not match:
+            errors.append("pubspec.yaml に version がありません")
+            version_name = ""
+            version_code = ""
+          else:
+            version = match.group(1)
+            version_name, sep, version_code = version.partition("+")
+            if not sep or not version_code.isdigit():
+              errors.append(f"pubspec.yaml version は x.y.z+N 形式にしてください: {version}")
+            print(f"versionName={version_name}")
+            print(f"versionCode={version_code}")
+
+          gradle_files = [pathlib.Path("android/app/build.gradle.kts"), pathlib.Path("android/app/build.gradle")]
+          gradle_file = next((p for p in gradle_files if p.exists()), None)
+          application_id = ""
+          if gradle_file is None:
+            errors.append("android/app/build.gradle(.kts) が見つかりません")
+          else:
+            gradle = gradle_file.read_text(encoding="utf-8")
+            app_id_match = re.search(r'applicationId\s*(?:=)?\s*["\']([^"\']+)["\']', gradle)
+            if app_id_match:
+              application_id = app_id_match.group(1)
+              print(f"applicationId={application_id}")
+            else:
+              errors.append(f"{gradle_file} から applicationId を取得できません")
+
+          if play_package_name and application_id and play_package_name != application_id:
+            errors.append(f"PLAY_PACKAGE_NAME ({play_package_name}) と applicationId ({application_id}) が一致しません")
+          if should_check_play_credentials:
+            if not play_package_name:
+              errors.append("GitHub Variable PLAY_PACKAGE_NAME が未設定です")
+            if not play_metadata_path:
+              errors.append("GitHub Variable PLAY_METADATA_PATH が未設定です")
+            if not play_internal_track:
+              errors.append("GitHub Variable PLAY_INTERNAL_TRACK が未設定です")
+            if enable_play_internal != "true":
+              errors.append("GitHub Variable ENABLE_PLAY_INTERNAL_ANDROID が true ではありません")
+
+          if firebase_prod_project_id == "kimuraryoma-dev-apps":
+            errors.append("FIREBASE_PROD_PROJECT_ID が dev 共用 project (kimuraryoma-dev-apps) になっています")
+          elif firebase_prod_project_id:
+            print(f"FIREBASE_PROD_PROJECT_ID={firebase_prod_project_id}")
+          else:
+            print("FIREBASE_PROD_PROJECT_ID=unset (Firebase未使用ならOK)")
+
+          required_texts = {
+            "title.txt": 30,
+            "short_description.txt": 80,
+            "full_description.txt": 4000,
+          }
+          for filename, limit in required_texts.items():
+            path = locale_root / filename
+            if not path.exists():
+              require_release_asset(f"{path} が見つかりません")
+              continue
+            text = path.read_text(encoding="utf-8").rstrip("\n")
+            print(f"{path}: {len(text)} chars")
+            if len(text) > limit:
+              errors.append(f"{path} が {limit} 文字を超えています ({len(text)} chars)")
+
+          changelog_candidates = []
+          if version_code:
+            changelog_candidates.append(locale_root / "changelogs" / f"{version_code}.txt")
+          changelog_candidates.extend([
+            locale_root / "changelogs" / "default.txt",
+            locale_root / "changelog.txt",
+          ])
+          changelog = next((p for p in changelog_candidates if p.exists()), None)
+          if changelog is None:
+            require_release_asset(f"{locale_root}/changelogs/default.txt または changelog.txt が見つかりません")
+          else:
+            text = changelog.read_text(encoding="utf-8").rstrip("\n")
+            print(f"{changelog}: {len(text)} chars")
+            if len(text) > 500:
+              errors.append(f"{changelog} が 500 文字を超えています ({len(text)} chars)")
+
+          screenshot_patterns = [
+            locale_root / "images" / "phoneScreenshots",
+            pathlib.Path("screenshots"),
+          ]
+          screenshots = []
+          for directory in screenshot_patterns:
+            if directory.exists():
+              screenshots.extend([p for p in directory.iterdir() if p.suffix.lower() in {".png", ".jpg", ".jpeg"}])
+          print(f"screenshots={len(screenshots)}")
+          if not screenshots:
+            require_release_asset("Play Store screenshots が見つかりません")
+
+          feature_dir = locale_root / "images" / "featureGraphic"
+          feature_graphics = []
+          if feature_dir.exists():
+            feature_graphics = [p for p in feature_dir.iterdir() if p.suffix.lower() in {".png", ".jpg", ".jpeg"}]
+          print(f"featureGraphic={len(feature_graphics)}")
+          if not feature_graphics:
+            require_release_asset(f"{feature_dir} に feature graphic が見つかりません")
+
+          print(f"playCredentialCheck={'enabled' if should_check_play_credentials else 'skipped'}")
+          if should_check_play_credentials:
+            secret_checks = {
+              "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON": os.environ.get("HAS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON") == "true",
+              "ANDROID_KEYSTORE_BASE64": os.environ.get("HAS_ANDROID_KEYSTORE_BASE64") == "true",
+              "ANDROID_STORE_PASSWORD": os.environ.get("HAS_ANDROID_STORE_PASSWORD") == "true",
+              "ANDROID_KEY_ALIAS": os.environ.get("HAS_ANDROID_KEY_ALIAS") == "true",
+              "ANDROID_KEY_PASSWORD": os.environ.get("HAS_ANDROID_KEY_PASSWORD") == "true",
+            }
+            for name, ok in secret_checks.items():
+              print(f"{name}={'set' if ok else 'missing'}")
+              if not ok:
+                errors.append(f"GitHub Secret {name} が未設定です")
+
+          if warnings:
+            print("\nRelease check warnings:")
+            for warning in warnings:
+              print(f"::warning::{warning}")
+
+          if errors:
+            print("\nRelease check failed:")
+            for error in errors:
+              print(f"- {error}")
+            sys.exit(1)
+          PY
+
+      - name: Decode keystore
+        if: steps.app.outputs.is_flutter_android == 'true' && env.SHOULD_CHECK_PLAY_CREDENTIALS == 'true'
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+
+      - name: Install dependencies
+        if: steps.app.outputs.is_flutter_android == 'true'
+        run: flutter pub get
+
+      - name: Build release AAB (with signing secrets)
+        if: steps.app.outputs.is_flutter_android == 'true' && env.SHOULD_CHECK_PLAY_CREDENTIALS == 'true'
+        env:
+          ANDROID_STORE_FILE: ${{ runner.temp }}/release.jks
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: flutter build appbundle --release
+
+      - name: Build release AAB (without GitHub signing secrets)
+        if: steps.app.outputs.is_flutter_android == 'true' && env.SHOULD_CHECK_PLAY_CREDENTIALS != 'true'
+        run: flutter build appbundle --release

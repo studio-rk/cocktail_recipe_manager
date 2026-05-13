@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "100433195540",
+    "project_id": "kimuraryoma-dev-apps",
+    "storage_bucket": "kimuraryoma-dev-apps.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:100433195540:android:a4440e8a3c4876c06fed01",
+        "android_client_info": {
+          "package_name": "com.cocktailbook.cocktail_recipe_manager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3g9s_lnp9B3Y9HqPuktGjaFza8-WhJvg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:100433195540:android:d037a71ec034240f6fed01",
+        "android_client_info": {
+          "package_name": "com.kimuraryoma.cicd_test_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3g9s_lnp9B3Y9HqPuktGjaFza8-WhJvg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:100433195540:android:be6acaffa060ae436fed01",
+        "android_client_info": {
+          "package_name": "com.kimuraryoma.template_test_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3g9s_lnp9B3Y9HqPuktGjaFza8-WhJvg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
